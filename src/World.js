@@ -4,7 +4,7 @@ import Component from "./Component.js";
 
 class World {
   constructor(max_dt = 0.02, maxTimesBiggerThanMaxDt = 10) {
-    this._shared = sharedPrivateData.getWorldData(this);
+    // this._shared = sharedPrivateData.getWorldData(this);
 
     this.max_dt = max_dt;
     this.maxTimesBiggerThanMaxDt = maxTimesBiggerThanMaxDt;
@@ -31,11 +31,6 @@ class World {
         usedDivRealDeltaT = newDeltaT / deltaT;
         deltaT = newDeltaT;
       };
-
-      this._addEntities();
-      this._addComponents();
-      this._removeComponents();
-      this._removeEntities();
 
       this._earlyUpdate(deltaT, updateNow, updateBefore);
 
