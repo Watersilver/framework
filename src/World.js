@@ -2,6 +2,31 @@ import sharedPrivateData from "./sharedPrivateData.js";
 import Entity from "./Entity.js";
 import Component from "./Component.js";
 
+const callbackNames = [
+  "earlyUpdate", "calculus",
+  "update", "draw"
+]
+
+class ComponentsIterationTree {
+  constructor() {
+    for (const callbackName of callbackNames) {
+      this[callbackName] = new Set();
+    }
+  }
+
+  add(component) {
+    for (const callbackName of callbackNames) {
+      if (component[callbackName]) this[callbackName].add(component);
+    }
+  }
+
+  delete(component) {
+    for (const callbackName of callbackNames) {
+      if (component[callbackName]) this[callbackName].delete(component);
+    }
+  }
+}
+
 class World {
   constructor(max_dt = 0.02, maxTimesBiggerThanMaxDt = 10) {
     // this._shared = sharedPrivateData.getWorldData(this);
@@ -10,6 +35,36 @@ class World {
     this.maxTimesBiggerThanMaxDt = maxTimesBiggerThanMaxDt;
 
     this.entities = new Set(); // All existing entities
+    this.components = new ComponentsIterationTree();
+  }
+
+  _earlyUpdate(deltaT, now, before) {
+    for (const component of this.components.earlyUpdate) {
+      component.earlyUpdate(deltaT, now, before);
+    }
+  }
+
+  _calculus(deltaT) {
+    const iterations = Math.ceil(deltaT / this.max_dt);
+    const dt = deltaT / iterations;
+
+    for (let i = 0; i < iterations; i++) {
+      for (const component of this.components.calculus) {
+        component.calculus(dt);
+      }
+    }
+  }
+
+  _update(deltaT, now, before) {
+    for (const component of this.components.update) {
+      component.update(deltaT, now, before);
+    }
+  }
+
+  _draw(deltaT, now, before) {
+    for (const component of this.components.draw) {
+      component.draw(deltaT, now, before);
+    }
   }
 
   start() {

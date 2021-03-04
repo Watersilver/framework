@@ -1,21 +1,17 @@
-// import sharedPrivateData from "./sharedPrivateData.js";
+import sharedPrivateData from "./sharedPrivateData.js";
 import Entity from "./Entity.js";
 
 class Component {
 
-  static index = 0;
-
-  // component I will run before or after. Overwrites index.
-  static before = null;
-  static after = null;
-
   // Can't be added to Entity that doesn't have instances of following components
+  // I will run after all components that I require.
   static requires = null;
 
   static unique = false;
 
-  constructor(entity) {
+  constructor(entity, ...args) {
     if (!(entity instanceof Entity)) throw TypeError("Component constructor argument must be an Entity.");
+    if (!entity.exists) return;
     this.entity = entity;
     const myClass = this.getClass();
     if (myClass.unique && entity.components.has(myClass)) {
@@ -28,20 +24,27 @@ class Component {
       for (const requiredClass of myClass.requires) {
         if (!entity.components.has(requiredClass)) return console.warn("Didn't add component. Required components are not present in entity.");
       }
+      entity.dependentComponents.set(myClass, this);
     }
     entity.components.set(myClass, this);
+    entity.world.components.add(this);
     if (this.load) this.load();
-    if (this.onAdd) this.onAdd();
+    if (this.onAdd) this.onAdd(args);
   }
 
-  remove() {
+  get exists() {return this.entity !== null}
+
+  remove(...args) {
     this.entity.components.delete(myClass, this);
+    this.entity.world.components.delete(this);
     const myClass = this.getClass();
-    for (const [compClass, compSet] of this.entity.components) {
+    if (myClass.requires) this.entity.dependentComponents.delete(myClass, this);
+    for (const [compClass, compSet] of this.entity.dependentComponents) {
       if (compClass.requires.has(myClass)) compSet.forEach(component => component.remove());
     }
-    if (this.onRemove) this.onRemove();
+    if (this.onRemove) this.onRemove(args);
     if (this.unload) this.unload();
+    this.entity = null;
   }
 
   getClass() {

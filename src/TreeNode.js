@@ -5,7 +5,8 @@ class TreeNode {
   }
   get parent() {return this._parent;}
   set parent(_) {throw Error("parent is read-only");}
-  get children() {return Array(...this._children);}
+  // get children() {return Array(...this._children);} // Too slow
+  get children() {return this._children;}
   set children(_) {throw Error("children is read-only");}
 
   addChild(node) {

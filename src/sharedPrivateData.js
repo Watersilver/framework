@@ -6,7 +6,6 @@ const allData = new WeakMap();
 class EntityData {
   constructor() {
     
-    // key: component, values: set of components that require component
   }
 }
 

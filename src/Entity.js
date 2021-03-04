@@ -16,6 +16,7 @@ class Entity extends TreeNode {
     this.world = world;
     this.components = new MapOfSets();
     // this._shared = sharedPrivateData.getWorldData(this.world);
+    this.dependentComponents = new MapOfSets();
   }
 
   remove() {
@@ -27,6 +28,11 @@ class Entity extends TreeNode {
         if (component.onEntityRemove) component.onEntityRemove();
         if (component.unload) component.unload();
       };
+    }
+
+    // Remove children too.
+    for (const child of this.children) {
+      child.remove();
     }
   }
 

@@ -9,8 +9,8 @@ class MapOfSets extends Map {
   }
 
   set(key, value) {
-    if (!this.has(key)) this.set(key, new Set());
-    return this.get(key).add(value);
+    if (!this.has(key)) this._set(key, new Set());
+    return this._get(key).add(value);
   }
 
   get(key) {
@@ -23,9 +23,10 @@ class MapOfSets extends Map {
     if (arguments.length === 1) {
       return this._delete(key);
     } else {
-      if (!this.has(key)) return false;
-      const deleted = this.get(key).delete(value);
-      if (this.get(key).size === 0) this._delete(key);
+      const got = this._get(key);
+      if (!got) return false;
+      const deleted = got.delete(value);
+      if (got.size === 0) this._delete(key);
       return deleted;
     }
   }
