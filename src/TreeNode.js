@@ -9,7 +9,7 @@ class TreeNode {
   get children() {return this._children;}
   set children(_) {throw Error("children is read-only");}
 
-  addChild(node) {
+  attachChild(node) {
     // Make sure "this" is not descendant of new child
     if (this.ascendUntil(anc => anc === node)) {
       throw Error("new child can't be TreeNode's ancestor")
@@ -20,7 +20,7 @@ class TreeNode {
     node._parent = this;
   }
 
-  removeChild(node) {
+  detachChild(node) {
     return node.detach();
   }
 

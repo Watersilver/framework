@@ -12,39 +12,42 @@ class Component {
   constructor(entity, ...args) {
     if (!(entity instanceof Entity)) throw TypeError("Component constructor argument must be an Entity.");
     if (!entity.exists) return;
-    this.entity = entity;
+    this._entity = entity;
     const myClass = this.getClass();
-    if (myClass.unique && entity.components.has(myClass)) {
+    if (myClass.unique && entity._components.has(myClass)) {
       return console.warn("Didn't add unique component. Already present in entity.");
     }
     if (myClass.requires) {
       if ((myClass.requires.prototype instanceof Component) || !(myClass.requires instanceof Set)) {
-        myClass.requires = new Set(myClass.requires);
+        myClass.requires = new Set([myClass.requires]);
       }
       for (const requiredClass of myClass.requires) {
-        if (!entity.components.has(requiredClass)) return console.warn("Didn't add component. Required components are not present in entity.");
+        if (!entity._components.has(requiredClass)) return console.warn("Didn't add component. Required components are not present in entity.");
       }
-      entity.dependentComponents.set(myClass, this);
+      entity._dependentComponents.set(myClass, this);
     }
-    entity.components.set(myClass, this);
-    entity.world.components.add(this);
+    entity._components.set(myClass, this);
+    entity.world._components.add(this);
     if (this.load) this.load();
-    if (this.onAdd) this.onAdd(args);
+    if (this.onAdd) this.onAdd(...args);
   }
 
-  get exists() {return this.entity !== null}
+  get exists() {return this._entity !== null;}
+
+  get entity() {return this._entity;}
 
   remove(...args) {
-    this.entity.components.delete(myClass, this);
-    this.entity.world.components.delete(this);
     const myClass = this.getClass();
-    if (myClass.requires) this.entity.dependentComponents.delete(myClass, this);
-    for (const [compClass, compSet] of this.entity.dependentComponents) {
+    const entity = this._entity;
+    entity._components.delete(myClass, this);
+    entity.world._components.delete(this);
+    if (myClass.requires) entity._dependentComponents.delete(myClass, this);
+    for (const [compClass, compSet] of entity._dependentComponents) {
       if (compClass.requires.has(myClass)) compSet.forEach(component => component.remove());
     }
-    if (this.onRemove) this.onRemove(args);
+    if (this.onRemove) this.onRemove(...args);
     if (this.unload) this.unload();
-    this.entity = null;
+    this._entity = null;
   }
 
   getClass() {

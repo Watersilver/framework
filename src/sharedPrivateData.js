@@ -1,11 +1,13 @@
 import World from "./World.js";
 import Entity from "./Entity.js";
+import MapOfSets from "./MapOfSets.js";
 
 const allData = new WeakMap();
 
 class EntityData {
   constructor() {
-    
+    this.components = new MapOfSets();
+    this.dependentComponents = new MapOfSets();
   }
 }
 
